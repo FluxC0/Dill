@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 )
 
@@ -15,11 +16,20 @@ type Config struct {
 	Concurrency      bool
 }
 
+func getConfigPath() string {
+	configHome := os.Getenv("XDG_CONFIG_HOME")
+	if configHome == "" {
+		// If XDG_CONFIG_HOME is not set, use a default path
+		configHome = filepath.Join(os.Getenv("HOME"), ".config")
+	}
+	return filepath.Join(configHome, "dill", "config.json")
+}
+
 func parse() {
 	isDangerous := flag.Bool("dangerous", false, "turns on danger mode if set, which bypasses all user checks. Tread lightly when using this flag.")
 	flag.Parse()
-
-	file, err := os.Open("/home/kengel/.config/dill/config.json")
+	configPath := getConfigPath()
+	file, err := os.Open(configPath)
 	if err != nil {
 		fmt.Println("failed to open config. Exit.", err)
 		return
@@ -46,6 +56,10 @@ func main_loop(isDangerous bool, config Config) {
 	if isDangerous {
 		fmt.Println("Danger mode enabled! Here be dragons...")
 	}
+	fmt.Println("checking package managers...")
+	var managers [1]string
+	managers[0] = "pacman"
+	pac_run()
 }
 
 func main() {
