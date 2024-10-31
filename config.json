@@ -1,10 +1,6 @@
 {
-  "packagemanagers": [
-    "dnf",
-    "flatpak",
-    "snap"
-  ],
+  "packagemanagers": ["dnf", "flatpak", "snap"],
   "authenticator": "run0",
-  "concurrency": "true",
+  "concurrency": true,
   "format": "silly"
 }
