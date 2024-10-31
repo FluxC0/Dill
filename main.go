@@ -1,52 +1,38 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strconv"
 )
 
 type Config struct {
 	Package_Managers []string `json:"packagemanagers"`
 	Authenticator    string   `json:"authenticator"`
-	concurrency_tmp  string   `json:concurrency`
+	concurrency_tmp  string   `json:"concurrency"`
 	Concurrency      bool
 }
 
-func getConfigPath() string {
-	configHome := os.Getenv("XDG_CONFIG_HOME")
-	if configHome == "" {
-		// If XDG_CONFIG_HOME is not set, use a default path
-		configHome = filepath.Join(os.Getenv("HOME"), ".config")
-	}
-	return filepath.Join(configHome, "dill", "config.json")
+type Pac_Out struct {
+	Package_name string `json:"package"`
+	Version      string `json:"version"`
 }
+
+// LoadingSpinner starts a loading spinner while the provided task runs.
 
 func parse() {
 	isDangerous := flag.Bool("dangerous", false, "turns on danger mode if set, which bypasses all user checks. Tread lightly when using this flag.")
 	flag.Parse()
-	configPath := getConfigPath()
+	configPath := getConfigPath("config.json")
 	file, err := os.Open(configPath)
-	if err != nil {
-		fmt.Println("failed to open config. Exit.", err)
-		return
-	}
+	check(err)
+
 	defer file.Close()
-
 	var config Config
+	UnmarshalJSON(configPath, &config)
 
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&config)
-	if err != nil {
-		fmt.Println("failed to decode config. Exit.", err)
-		return
-	}
-	fmt.Println(config.Concurrency)
 	config.Concurrency, _ = strconv.ParseBool(config.concurrency_tmp)
-	fmt.Printf("%T \n", config.Concurrency)
 
 	main_loop(*isDangerous, config)
 }
@@ -58,8 +44,18 @@ func main_loop(isDangerous bool, config Config) {
 	}
 	fmt.Println("checking package managers...")
 	var managers [1]string
-	managers[0] = "pacman"
-	pac_run()
+
+	LoadingSpinner(pac_run) // pac_run takes the output from a pacman -Syu and turns it into a .json file, that is **TEMPORARILY**
+	pacPath := getConfigPath("pacman_dry_run_output.json")
+	var pacout []Pac_Out
+	UnmarshalJSON(pacPath, &pacout)
+
+	horizontalLine := "─"
+	verticalLine := "│"
+	topLeft := "╔"
+	topRight := "╗"
+	bottomLeft := "╚"
+	bottomRight := "╝"
 }
 
 func main() {

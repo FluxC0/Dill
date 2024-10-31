@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -15,6 +16,8 @@ type PackageUpdate struct {
 }
 
 func pac_run() {
+	configHome := getConfigPath("")
+	configHome = filepath.Join(configHome, "pacman_dry_run_output.json")
 	// Run the pacman -Syu command with --print and --print-format
 	cmd := exec.Command("sudo", "pacman", "-Syu", "--print", "--print-format", "%n %v")
 	var out bytes.Buffer
@@ -45,17 +48,9 @@ func pac_run() {
 
 	// Convert to JSON
 	jsonData, err := json.MarshalIndent(updates, "", "  ")
-	if err != nil {
-		fmt.Println("Error converting to JSON:", err)
-		return
-	}
+	check(err)
 
 	// Write JSON to file
-	err = os.WriteFile("pacman_dry_run_output.json", jsonData, 0644)
-	if err != nil {
-		fmt.Println("Error writing JSON file:", err)
-		return
-	}
-
-	fmt.Println("Conversion to JSON completed successfully!")
+	err = os.WriteFile(configHome, jsonData, 0644)
+	check(err)
 }
