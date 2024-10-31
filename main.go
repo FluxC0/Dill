@@ -5,12 +5,14 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 type Config struct {
 	Package_Managers []string `json:"packagemanagers"`
-	Authenticator    string `json:"authenticator"`
-	Concurrency      bool   `json:concurrency`
+	Authenticator    string   `json:"authenticator"`
+	concurrency_tmp  string   `json:concurrency`
+	Concurrency      bool
 }
 
 func parse() {
@@ -26,12 +28,16 @@ func parse() {
 
 	var config Config
 
-  decoder := json.NewDecoder(file)
+	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&config)
 	if err != nil {
 		fmt.Println("failed to decode config. Exit.", err)
 		return
 	}
+	fmt.Println(config.Concurrency)
+	config.Concurrency, _ = strconv.ParseBool(config.concurrency_tmp)
+	fmt.Printf("%T \n", config.Concurrency)
+
 	main_loop(*isDangerous, config)
 }
 
@@ -40,7 +46,6 @@ func main_loop(isDangerous bool, config Config) {
 	if isDangerous {
 		fmt.Println("Danger mode enabled! Here be dragons...")
 	}
-
 }
 
 func main() {
