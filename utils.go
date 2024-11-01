@@ -37,11 +37,14 @@ func LoadingSpinner(task func()) {
 		}
 	}()
 
-	// Execute the provided task
-	task()
+	// Execute the provided task in a separate goroutine
+	go func() {
+		task()
+		close(done) // Signal the loader to stop once the task is done
+	}()
 
-	// Signal the loader to stop
-	close(done)
+	// Wait until the task is complete
+	<-done                             // Block until the task is complete
 	fmt.Println("\rDone!            ") // Clear line after done
 }
 
@@ -72,5 +75,6 @@ func UnmarshalJSON(filepath string, storageStruct any) any {
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(storageStruct)
 	check(err)
+	fmt.Println(storageStruct)
 	return storageStruct // Return the unmarshaled struct
 }

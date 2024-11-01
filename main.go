@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -30,7 +31,9 @@ func parse() {
 
 	defer file.Close()
 	var config Config
-	UnmarshalJSON(configPath, &config)
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(&config)
+	check(err)
 
 	config.Concurrency, _ = strconv.ParseBool(config.concurrency_tmp)
 
@@ -43,19 +46,15 @@ func main_loop(isDangerous bool, config Config) {
 		fmt.Println("Danger mode enabled! Here be dragons...")
 	}
 	fmt.Println("checking package managers...")
-	var managers [1]string
+	// var managers [1]string
 
-	LoadingSpinner(pac_run) // pac_run takes the output from a pacman -Syu and turns it into a .json file, that is **TEMPORARILY**
-	pacPath := getConfigPath("pacman_dry_run_output.json")
-	var pacout []Pac_Out
-	UnmarshalJSON(pacPath, &pacout)
+	pacman_list()
+	horizontalLine := "_"
+	bottomLeft := "⎣"
 
-	horizontalLine := "─"
-	verticalLine := "│"
-	topLeft := "╔"
-	topRight := "╗"
-	bottomLeft := "╚"
-	bottomRight := "╝"
+	// Print the bottom line
+	fmt.Printf("%s%s\n", bottomLeft, horizontalLine)
+	flat_run()
 }
 
 func main() {

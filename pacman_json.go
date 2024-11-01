@@ -54,3 +54,38 @@ func pac_run() {
 	err = os.WriteFile(configHome, jsonData, 0644)
 	check(err)
 }
+
+func pacman_list() {
+	LoadingSpinner(pac_run) // pac_run takes the output from a pacman -Syu and turns it into a .json file, that is **TEMPORARILY**
+	/* I just want to make a short note here. I spent a solid hour attempting to debug this LoadingSpinner function, thinking something was wrong with it, but no.
+	* Turns out, it's just good old go making unused variables into errors. so i spent ALL this time trying to debug my program, but turns out, it never compiled in the first place.
+	* Just leaving this here as a warning. Here were dragons. */
+	fmt.Println("test")
+	pacPath := getConfigPath("pacman_dry_run_output.json")
+	var pacout []Pac_Out
+	file, err := os.Open(pacPath)
+	check(err)
+	defer file.Close()
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(&pacout)
+	check(err)
+
+	maxLength := 0
+	for _, item := range pacout {
+		if len(item.Package_name) > maxLength {
+			maxLength = len(item.Package_name)
+		}
+	}
+
+	// Define widths based on max length
+	nameWidth := maxLength + 2 // Extra padding for formatting
+	versionWidth := 10
+
+	verticalLine := "│"
+	fmt.Println("Pacman Packages ")
+
+	// Print each item in pacout
+	for _, item := range pacout {
+		fmt.Printf("%s %-*s %s %-*s %s\n", verticalLine, nameWidth, item.Package_name, verticalLine, versionWidth, item.Version, verticalLine)
+	}
+}
