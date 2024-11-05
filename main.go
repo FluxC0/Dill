@@ -46,6 +46,13 @@ func main_loop(isDangerous bool, config Config) {
 	if isDangerous {
 		fmt.Println("Danger mode enabled! Here be dragons...")
 	}
+	if fileInfo, _ := os.Stdin.Stat(); (fileInfo.Mode() & os.ModeCharDevice) == 0 {
+
+		println("ERROR: do NOT run Dill in a non-interactive terminal.")
+		panic("Dill is designed to be run interactively.")
+	} else {
+		fmt.Println("Running interactively, continuing...")
+	}
 	fmt.Println("checking package managers...")
 	managers := config.Package_Managers
 	if slices.Contains(managers, "pacman") {
@@ -63,6 +70,7 @@ func main_loop(isDangerous bool, config Config) {
 	horizontalLine := "_"
 	bottomLeft := "⎣"
 	flatpak_list()
+
 	// Print the bottom line
 	fmt.Printf("%s%s\n", bottomLeft, horizontalLine)
 }

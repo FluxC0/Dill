@@ -104,3 +104,14 @@ func flatpak_list() {
 		fmt.Printf("%s %-*s %s %-*s %s\n", verticalLine, nameWidth, item.Name, verticalLine, versionWidth, item.Version, verticalLine)
 	}
 }
+
+func flat_update() {
+	// Run the flatpak update command
+	cmd := exec.Command("flatpak", "update", "-y")
+	_, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println("Error executing command:", err)
+		return
+	}
+	/* In this instance, dont need to check the output, just check errors. */
+}
