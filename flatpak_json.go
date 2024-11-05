@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 )
@@ -35,9 +36,10 @@ func flat_run() {
 
 		// Example line: "org.example.Appname  1.2.3  1.2.4"
 		parts := strings.Fields(line)
-		if len(parts) == 3 {
-			name := parts[0]
-			newVersion := parts[2] // The new version
+		if len(parts) == 5 {
+			name := parts[2]
+
+			newVersion := parts[3] // The new version
 
 			updates = append(updates, flatpak_struct{
 				Name:    name,
@@ -47,12 +49,58 @@ func flat_run() {
 	}
 
 	// Convert updates slice to JSON
-	jsonData, err := json.MarshalIndent(updates, "", "  ")
-	if err != nil {
-		fmt.Println("Error converting to JSON:", err)
+	var jsonData []byte
+	var errJSON error
+	if len(updates) == 0 {
+		jsonData = []byte("null")
+	} else {
+		jsonData, errJSON = json.MarshalIndent(updates, "", "  ")
+	}
+	if errJSON != nil {
+		fmt.Println("Error converting to JSON:", errJSON)
 		return
 	}
 
 	// Print the JSON output
-	fmt.Println(string(jsonData))
+
+	flatPath := getConfigPath("flatpak_updates.json")
+	// Write the JSON data to a file
+	err = os.WriteFile(flatPath, jsonData, 0644)
+	if err != nil {
+		fmt.Println("Error writing to file:", err)
+		return
+	}
+}
+
+func flatpak_list() {
+	LoadingSpinner(flat_run)
+	// Get the json data so it can be manipulated later
+	flatPath := getConfigPath("flatpak_updates.json")
+
+	file, err := os.Open(flatPath)
+
+	check(err)
+
+	defer file.Close()
+
+	var flatdata []flatpak_struct
+
+	decoder := json.NewDecoder(file)
+
+	err = decoder.Decode(&flatdata)
+
+	check(err)
+
+	maxLength := 0
+	for _, item := range flatdata {
+		if len(item.Name) > maxLength {
+			maxLength = len(item.Name)
+		}
+	}
+	nameWidth := maxLength + 2 // Extra padding for formatting
+	versionWidth := 10
+	verticalLine := "│"
+	for _, item := range flatdata {
+		fmt.Printf("%s %-*s %s %-*s %s\n", verticalLine, nameWidth, item.Name, verticalLine, versionWidth, item.Version, verticalLine)
+	}
 }

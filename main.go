@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 )
 
@@ -46,15 +47,24 @@ func main_loop(isDangerous bool, config Config) {
 		fmt.Println("Danger mode enabled! Here be dragons...")
 	}
 	fmt.Println("checking package managers...")
-	// var managers [1]string
+	managers := config.Package_Managers
+	if slices.Contains(managers, "pacman") {
+		fmt.Println("pacman detected")
+		pac_run()
+	} else if slices.Contains(managers, "apt") {
+		fmt.Println("apt detected")
+	} else if slices.Contains(managers, "dnf") {
+		fmt.Println("dnf detected")
+	} else {
+		fmt.Println("no package managers found in config.json. exiting...")
+		os.Exit(1)
+	}
 
-	pacman_list()
 	horizontalLine := "_"
 	bottomLeft := "⎣"
-
+	flatpak_list()
 	// Print the bottom line
 	fmt.Printf("%s%s\n", bottomLeft, horizontalLine)
-	flat_run()
 }
 
 func main() {
