@@ -15,7 +15,7 @@ type flatpak_struct struct {
 
 func flat_run() {
 	// Run the flatpak remote-ls command to get the list of upgrades
-	cmd := exec.Command("flatpak", "remote-ls", "--updates")
+	cmd := exec.Command("flatpak", "remote-ls", "--updates", "--columns=application,branch")
 	output, err := cmd.CombinedOutput() // CombinedOutput to capture both stdout and stderr
 	if err != nil {
 		fmt.Println("Error executing command:", err)
@@ -36,10 +36,10 @@ func flat_run() {
 
 		// Example line: "org.example.Appname  1.2.3  1.2.4"
 		parts := strings.Fields(line)
-		if len(parts) == 5 {
-			name := parts[2]
+		if len(parts) == 2 {
+			name := parts[0]
 
-			newVersion := parts[3] // The new version
+			newVersion := parts[1] // The new version
 
 			updates = append(updates, flatpak_struct{
 				Name:    name,

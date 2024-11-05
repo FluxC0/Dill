@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
+	"os/user"
 	"path/filepath"
 	"strings"
 	"time"
@@ -49,11 +51,15 @@ func LoadingSpinner(task func()) {
 }
 
 func getConfigPath(target string) string {
-	configHome := os.Getenv("XDG_CONFIG_HOME")
-	if configHome == "" {
-		// If XDG_CONFIG_HOME is not set, use a default path
-		configHome = filepath.Join(os.Getenv("HOME"), ".config")
+	targetUser := os.Getenv("SUDO_USER")
+	var configHome string
+	if targetUser == "" {
+		fmt.Println("ERROR: SUDO_USER empty. this could be because you are using an unsupported authenticator. Please use sudo.")
+		panic("Could not get config.")
+	} else {
+		configHome = filepath.Join("/home/", targetUser, "/.config/")
 	}
+
 	if target == "" {
 		return filepath.Join(configHome, "dill") // make this so you can just retrieve the directory, for writing.
 	} else {
@@ -77,4 +83,34 @@ func UnmarshalJSON(filepath string, storageStruct any) any {
 	check(err)
 	fmt.Println(storageStruct)
 	return storageStruct // Return the unmarshaled struct
+}
+
+func remove_pac(s []Pac_Out, i int) []Pac_Out {
+	s[i] = s[len(s)-1]
+	return s[:len(s)-1]
+}
+
+func isRoot() bool {
+	currentUser, err := user.Current()
+	if err != nil {
+		log.Fatalf("[isRoot] Unable to get current user: %s", err)
+	}
+	return currentUser.Username == "root"
+}
+
+func confirm_choice() {
+	fmt.Printf("\n ")
+	fmt.Println("Would you like to make these changes to your installation? Y/N")
+	var input string
+	fmt.Scanln(&input)
+	if input == "Y" {
+		fmt.Println("Okay, continuing.")
+	} else if input == "N" {
+		fmt.Println("Okay, exiting gracefully.")
+		os.Exit(0)
+
+	} else {
+		fmt.Println("Invalid choice, try again.")
+		confirm_choice()
+	}
 }

@@ -6,14 +6,10 @@ import (
 	"fmt"
 	"os"
 	"slices"
-	"strconv"
 )
 
 type Config struct {
 	Package_Managers []string `json:"packagemanagers"`
-	Authenticator    string   `json:"authenticator"`
-	concurrency_tmp  string   `json:"concurrency"`
-	Concurrency      bool
 }
 
 type Pac_Out struct {
@@ -36,8 +32,6 @@ func parse() {
 	err = decoder.Decode(&config)
 	check(err)
 
-	config.Concurrency, _ = strconv.ParseBool(config.concurrency_tmp)
-
 	main_loop(*isDangerous, config)
 }
 
@@ -45,6 +39,10 @@ func main_loop(isDangerous bool, config Config) {
 	fmt.Println("Welcome to Dill! The meta-package-manager.")
 	if isDangerous {
 		fmt.Println("Danger mode enabled! Here be dragons...")
+	}
+	if !isRoot() {
+		fmt.Println("ERROR: Dill must be run as root.")
+		panic("Permission Denied.")
 	}
 	if fileInfo, _ := os.Stdin.Stat(); (fileInfo.Mode() & os.ModeCharDevice) == 0 {
 
@@ -57,11 +55,14 @@ func main_loop(isDangerous bool, config Config) {
 	managers := config.Package_Managers
 	if slices.Contains(managers, "pacman") {
 		fmt.Println("pacman detected")
-		pac_run()
+		pacman_list()
 	} else if slices.Contains(managers, "apt") {
 		fmt.Println("apt detected")
 	} else if slices.Contains(managers, "dnf") {
 		fmt.Println("dnf detected")
+	} else if slices.Contains(managers, "flatpak") {
+		fmt.Println("flatpak detected")
+		flatpak_list()
 	} else {
 		fmt.Println("no package managers found in config.json. exiting...")
 		os.Exit(1)
@@ -69,10 +70,13 @@ func main_loop(isDangerous bool, config Config) {
 
 	horizontalLine := "_"
 	bottomLeft := "⎣"
-	flatpak_list()
 
 	// Print the bottom line
 	fmt.Printf("%s%s\n", bottomLeft, horizontalLine)
+	confirm_choice()
+	if slices.Contains(managers, "pacman") {
+		LoadingSpinner(pac_update)
+	}
 }
 
 func main() {

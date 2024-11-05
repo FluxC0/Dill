@@ -56,7 +56,7 @@ func pac_run() {
 }
 
 func pacman_list() {
-	LoadingSpinner(pac_run) // pac_run takes the output from a pacman -Syu and turns it into a .json file, that is **TEMPORARILY**
+	LoadingSpinner(pac_run) // pac_run takes the output from a pacman -Syu and turns it into a .json file, that is **TEMPORARILY** put in .config (this will probably be the most permanent thing in the project.)
 	/* I just want to make a short note here. I spent a solid hour attempting to debug this LoadingSpinner function, thinking something was wrong with it, but no.
 	* Turns out, it's just good old go making unused variables into errors. so i spent ALL this time trying to debug my program, but turns out, it never compiled in the first place.
 	* Just leaving this here as a warning. Here were dragons. */
@@ -71,7 +71,10 @@ func pacman_list() {
 	check(err)
 
 	maxLength := 0
-	for _, item := range pacout {
+	for i, item := range pacout {
+		if pacout[i].Version == "downloading..." {
+			remove_pac(pacout, i)
+		}
 		if len(item.Package_name) > maxLength {
 			maxLength = len(item.Package_name)
 		}
@@ -87,5 +90,13 @@ func pacman_list() {
 	// Print each item in pacout
 	for _, item := range pacout {
 		fmt.Printf("%s %-*s %s %-*s %s\n", verticalLine, nameWidth, item.Package_name, verticalLine, versionWidth, item.Version, verticalLine)
+	}
+}
+
+func pac_update() {
+	cmd := exec.Command("pacman", "-Syu", "--noconfirm")
+	err := cmd.Run()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "!! Could not update pacman !! %s", err)
 	}
 }
