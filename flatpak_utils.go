@@ -63,7 +63,7 @@ func flat_run() {
 
 	// Print the JSON output
 
-	flatPath := getConfigPath("flatpak_updates.json")
+	flatPath := getTMP("flatpak_updates.json")
 	// Write the JSON data to a file
 	err = os.WriteFile(flatPath, jsonData, 0644)
 	if err != nil {
@@ -75,7 +75,7 @@ func flat_run() {
 func flatpak_list() {
 	LoadingSpinner(flat_run)
 	// Get the json data so it can be manipulated later
-	flatPath := getConfigPath("flatpak_updates.json")
+	flatPath := getTMP("flatpak_updates.json")
 
 	file, err := os.Open(flatPath)
 
@@ -99,7 +99,7 @@ func flatpak_list() {
 	}
 	nameWidth := maxLength + 2 // Extra padding for formatting
 	versionWidth := 10
-	verticalLine := "│"
+	verticalLine := "|"
 	for _, item := range flatdata {
 		fmt.Printf("%s %-*s %s %-*s %s\n", verticalLine, nameWidth, item.Name, verticalLine, versionWidth, item.Version, verticalLine)
 	}

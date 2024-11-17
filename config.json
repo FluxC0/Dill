@@ -1,6 +1,6 @@
 {
-  "packagemanagers": ["dnf", "flatpak", "snap"],
-  "authenticator": "run0",
-  "concurrency": true,
-  "format": "silly"
+  "packagemanagers": [
+    "flatpak",
+    "apk"
+  ]
 }

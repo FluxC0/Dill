@@ -67,6 +67,18 @@ func getConfigPath(target string) string {
 	}
 }
 
+func getTMP(target string) string {
+	_, err := os.Open("/tmp/dill")
+	if err != nil {
+		os.Mkdir("/tmp/dill/", 01411)
+	}
+	if target == "" {
+		return filepath.Join("/tmp/", "dill")
+	} else {
+		return filepath.Join("/tmp/", "dill", target)
+	}
+}
+
 func check(err error) {
 	if err != nil {
 		panic(err)

@@ -56,18 +56,32 @@ func main_loop(isDangerous bool, config Config) {
 	if slices.Contains(managers, "pacman") {
 		fmt.Println("pacman detected")
 		pacman_list()
-	} else if slices.Contains(managers, "apt") {
+	}
+
+	if slices.Contains(managers, "apt") {
 		fmt.Println("apt detected")
-	} else if slices.Contains(managers, "dnf") {
+		// Call apt list or other actions
+	}
+
+	if slices.Contains(managers, "dnf") {
 		fmt.Println("dnf detected")
-	} else if slices.Contains(managers, "flatpak") {
+		// Call dnf list or other actions
+	}
+
+	if slices.Contains(managers, "flatpak") {
 		fmt.Println("flatpak detected")
 		flatpak_list()
-	} else {
+	}
+
+	if slices.Contains(managers, "apk") {
+		fmt.Println("apk detected")
+		alpine_list()
+	}
+
+	if len(managers) == 0 {
 		fmt.Println("no package managers found in config.json. exiting...")
 		os.Exit(1)
 	}
-
 	horizontalLine := "_"
 	bottomLeft := "⎣"
 
@@ -76,6 +90,12 @@ func main_loop(isDangerous bool, config Config) {
 	confirm_choice()
 	if slices.Contains(managers, "pacman") {
 		LoadingSpinner(pac_update)
+	}
+	if slices.Contains(managers, "flatpak") {
+		LoadingSpinner(flat_update)
+	}
+	if slices.Contains(managers, "apk") {
+		LoadingSpinner(alpine_update)
 	}
 }
 

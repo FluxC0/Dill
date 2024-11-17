@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 )
 
@@ -16,8 +15,7 @@ type PackageUpdate struct {
 }
 
 func pac_run() {
-	configHome := getConfigPath("")
-	configHome = filepath.Join(configHome, "pacman_dry_run_output.json")
+	configHome := getTMP("pacman_dry_run_output.json")
 	// Run the pacman -Syu command with --print and --print-format
 	cmd := exec.Command("sudo", "pacman", "-Syu", "--print", "--print-format", "%n %v")
 	var out bytes.Buffer
@@ -61,7 +59,7 @@ func pacman_list() {
 	* Turns out, it's just good old go making unused variables into errors. so i spent ALL this time trying to debug my program, but turns out, it never compiled in the first place.
 	* Just leaving this here as a warning. Here were dragons. */
 	fmt.Println("test")
-	pacPath := getConfigPath("pacman_dry_run_output.json")
+	pacPath := getTMP("pacman_dry_run_output.json")
 	var pacout []Pac_Out
 	file, err := os.Open(pacPath)
 	check(err)
